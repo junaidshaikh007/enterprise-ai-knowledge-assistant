@@ -30,8 +30,10 @@ async def health_check():
     return HealthResponse(status="ok", message="API is healthy and running")
 
 from app.api.v1.auth import router as auth_router
-app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+from app.api.v1.documents import router as documents_router
 
+app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(documents_router, prefix="/api/v1/documents", tags=["documents"])
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
