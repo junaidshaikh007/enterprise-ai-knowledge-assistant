@@ -16,6 +16,15 @@ class Settings(BaseSettings):
     POSTGRES_DB: str = "knowledge_assistant"
     POSTGRES_PORT: str = "5432"
 
+    # Qdrant (Vector Database)
+    QDRANT_HOST: str = "localhost"
+    QDRANT_PORT: int = 6333
+    QDRANT_API_KEY: Optional[str] = None
+    
+    # LLM & Embeddings
+    OPENAI_API_KEY: Optional[str] = None
+    EMBEDDING_MODEL: str = "text-embedding-3-small"
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

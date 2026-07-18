@@ -7,7 +7,7 @@ from app.core.deps import get_current_active_user, get_current_organization
 from app.models.user import User
 from app.models.organization import Organization
 from app.utils.document_parser import document_parser
-
+from app.services.embedding_service import embedding_service
 router = APIRouter()
 
 @router.post("/upload")
@@ -40,13 +40,24 @@ async def upload_document(
             detail=f"Error processing document: {str(e)}"
         )
     
-    # Return response with chunk metadata for now
-    # In Phase 4, we will send these chunks to the Vector DB
+    # Embed and store in Qdrant
+    success = embedding_service.embed_and_store_chunks(
+        chunks=chunks,
+        organization_id=current_org.id,
+        file_name=file.filename
+    )
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate embeddings and store in Vector DB."
+        )
+
     return {
         "filename": file.filename,
         "content_type": file.content_type,
         "size": len(content),
-        "status": "processed",
+        "status": "embedded_and_stored",
         "num_chunks": len(chunks),
-        "message": "File successfully parsed and chunked. Ready for Vector DB."
+        "message": "File successfully parsed, embedded, and stored in Vector DB."
     }
