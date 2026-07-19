@@ -31,9 +31,11 @@ async def health_check():
 
 from app.api.v1.auth import router as auth_router
 from app.api.v1.documents import router as documents_router
+from app.api.v1.chat import router as chat_router
 
 app.include_router(auth_router, prefix="/api/v1/auth", tags=["auth"])
 app.include_router(documents_router, prefix="/api/v1/documents", tags=["documents"])
+app.include_router(chat_router, prefix="/api/v1/chat", tags=["chat"])
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
