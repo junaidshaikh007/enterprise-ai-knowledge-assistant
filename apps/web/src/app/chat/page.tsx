@@ -2,16 +2,7 @@
 
 import React, { useState } from "react";
 import { ChatSidebar, ChatSession } from "@/components/ChatSidebar";
-
-/* ─── Types ─── */
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
-
-/* ─── Seed Data (placeholder until DB integration) ─── */
+import { ChatMessage, Message } from "@/components/ChatMessage";
 const SEED_SESSIONS: ChatSession[] = [
   {
     id: "1",
@@ -194,35 +185,7 @@ export default function ChatPage() {
             /* ─── Message Thread ─── */
             <div className="max-w-3xl mx-auto w-full px-4 py-6 space-y-6">
               {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  {/* Assistant Avatar */}
-                  {msg.role === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">
-                      AI
-                    </div>
-                  )}
-
-                  {/* Bubble */}
-                  <div
-                    className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                      msg.role === "user"
-                        ? "bg-violet-600 text-white rounded-br-md"
-                        : "bg-white/[0.06] text-zinc-200 border border-white/5 rounded-bl-md"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-
-                  {/* User Avatar */}
-                  {msg.role === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center flex-shrink-0 text-xs font-bold mt-0.5">
-                      U
-                    </div>
-                  )}
-                </div>
+                <ChatMessage key={msg.id} message={msg} />
               ))}
 
               {/* Loading indicator */}
