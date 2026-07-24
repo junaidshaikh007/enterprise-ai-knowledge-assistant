@@ -9,7 +9,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: scaffold main chat page layout`
 * **[x] Day 2**: Build the chat sidebar UI listing active/past chat sessions with hover effects and a "New Chat" button.
   * *Commit:* `feat: implement chat sidebar UI`
-* **[ ] Day 3**: Implement the message input container at the bottom of the chat window (auto-resizing text area, send button, Enter-to-submit).
+* **[x] Day 3**: Implement the message input container at the bottom of the chat window (auto-resizing text area, send button, Enter-to-submit).
   * *Commit:* `feat: create chat input text area component`
 * **[x] Day 4**: Design the user and assistant message bubbles (`ChatMessage.tsx`) supporting avatars and distinct background styles.
   * *Commit:* `feat: implement message bubble rendering components`
