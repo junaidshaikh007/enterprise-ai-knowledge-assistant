@@ -1,4 +1,5 @@
 import React from "react";
+import { MarkdownRenderer } from "./MarkdownRenderer";
 
 export interface Message {
   id: string;
@@ -25,13 +26,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       
       {/* Bubble */}
       <div
-        className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+        className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
           isUser
             ? "bg-violet-600 text-white rounded-br-md"
             : "bg-white/[0.06] text-zinc-200 border border-white/5 rounded-bl-md"
         }`}
       >
-        {message.content}
+        {isUser ? (
+          <div className="whitespace-pre-wrap">{message.content}</div>
+        ) : (
+          <MarkdownRenderer content={message.content} />
+        )}
       </div>
 
       {/* User Avatar */}
