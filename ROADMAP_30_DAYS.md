@@ -13,7 +13,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: create chat input text area component`
 * **[x] Day 4**: Design the user and assistant message bubbles (`ChatMessage.tsx`) supporting avatars and distinct background styles.
   * *Commit:* `feat: implement message bubble rendering components`
-* **[ ] Day 5**: Add rich text and basic Markdown rendering to the message bubble content.
+* **[x] Day 5**: Add rich text and basic Markdown rendering to the message bubble content.
   * *Commit:* `feat: add markdown rendering to chat messages`
 * **[ ] Day 6**: Build the collapsible source references panel below assistant bubbles to display document names and retrieval confidence scores.
   * *Commit:* `feat: implement source reference citations panel`
