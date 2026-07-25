@@ -1,11 +1,18 @@
 import React from "react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
 
+export interface SourceReference {
+  id: string;
+  documentName: string;
+  confidenceScore: number;
+}
+
 export interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  sources?: SourceReference[];
 }
 
 interface ChatMessageProps {
