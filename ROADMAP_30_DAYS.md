@@ -15,7 +15,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: implement message bubble rendering components`
 * **[x] Day 5**: Add rich text and basic Markdown rendering to the message bubble content.
   * *Commit:* `feat: add markdown rendering to chat messages`
-* **[ ] Day 6**: Build the collapsible source references panel below assistant bubbles to display document names and retrieval confidence scores.
+* **[x] Day 6**: Build the collapsible source references panel below assistant bubbles to display document names and retrieval confidence scores.
   * *Commit:* `feat: implement source reference citations panel`
 * **[ ] Day 7**: Connect the frontend chat interface to the `/api/v1/chat` endpoint using React state.
   * *Commit:* `feat: integrate chat UI with non-streaming chat endpoint`

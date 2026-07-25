@@ -41,13 +41,19 @@ export const SourceReferencesPanel: React.FC<SourceReferencesPanelProps> = ({ so
         </span>
       </button>
 
-      {isOpen && (
-        <div className="mt-2 flex flex-col gap-1.5 pl-4 border-l-2 border-violet-500/30">
-          {sources.map((source) => (
-            <SourceCitation key={source.id} source={source} />
-          ))}
+      <div
+        className={`grid transition-all duration-300 ease-in-out ${
+          isOpen ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 mt-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-1.5 pl-4 border-l-2 border-violet-500/30 py-1">
+            {sources.map((source) => (
+              <SourceCitation key={source.id} source={source} />
+            ))}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
