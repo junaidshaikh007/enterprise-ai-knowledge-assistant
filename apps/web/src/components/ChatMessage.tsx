@@ -1,5 +1,6 @@
 import React from "react";
 import { MarkdownRenderer } from "./MarkdownRenderer";
+import { SourceReferencesPanel } from "./SourceReferencesPanel";
 
 export interface SourceReference {
   id: string;
@@ -42,7 +43,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
         {isUser ? (
           <div className="whitespace-pre-wrap">{message.content}</div>
         ) : (
-          <MarkdownRenderer content={message.content} />
+          <div className="flex flex-col">
+            <MarkdownRenderer content={message.content} />
+            {message.sources && message.sources.length > 0 && (
+              <SourceReferencesPanel sources={message.sources} />
+            )}
+          </div>
         )}
       </div>
 
