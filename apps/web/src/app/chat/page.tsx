@@ -88,6 +88,11 @@ export default function ChatPage() {
         role: "assistant",
         content: data.answer ?? "Sorry, I could not generate a response.",
         timestamp: new Date(),
+        sources: data.sources?.map((s: any, idx: number) => ({
+          id: `source-${idx}`,
+          documentName: s.file_name,
+          confidenceScore: s.score
+        }))
       };
       setMessages((prev) => [...prev, assistantMsg]);
     } catch {
