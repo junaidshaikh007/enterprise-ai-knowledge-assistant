@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List
+from typing import Any, AsyncIterator, Dict, List
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from app.core.config import settings
@@ -54,5 +54,19 @@ class LLMService:
         except Exception as e:
             logger.error(f"Failed to generate answer: {e}")
             return "I'm sorry, I encountered an error while trying to generate the answer."
+
+    async def stream_answer_chunks(
+        self, query: str, context_chunks: List[Dict[str, Any]]
+    ) -> AsyncIterator[Any]:
+        """Asynchronously yield raw response chunks from the configured LLM."""
+        logger.info(
+            "Streaming answer for query: '%s' with %d context chunks.",
+            query,
+            len(context_chunks),
+        )
+        messages = self._build_messages(query, context_chunks)
+
+        async for chunk in self.llm.astream(messages):
+            yield chunk
 
 llm_service = LLMService()
