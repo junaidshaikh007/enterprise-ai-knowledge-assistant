@@ -1,5 +1,5 @@
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from app.core.config import settings
@@ -15,34 +15,35 @@ class LLMService:
             temperature=0.0
         )
 
+    def _build_messages(
+        self, query: str, context_chunks: List[Dict[str, Any]]
+    ) -> List[SystemMessage | HumanMessage]:
+        """Build the context-grounded messages used by synchronous and streamed replies."""
+        context_text = ""
+        for index, chunk in enumerate(context_chunks, start=1):
+            text = chunk.get("text", "").strip()
+            file_name = chunk.get("file_name", "Unknown File")
+            context_text += f"\n--- Chunk {index} (Source: {file_name}) ---\n{text}\n"
+
+        system_prompt = (
+            "You are an enterprise AI knowledge assistant. You will be provided with context "
+            "from the organization's knowledge base. Answer the user's question based ONLY "
+            "on the provided context. If the answer cannot be found in the context, politely "
+            "state that you do not have that information. Do not hallucinate or use outside knowledge."
+            "\n\nContext:\n"
+            f"{context_text}"
+        )
+
+        return [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=query),
+        ]
+
     def generate_answer(self, query: str, context_chunks: List[Dict[str, Any]]) -> str:
-        """
-        Takes the user query and the retrieved context chunks, constructs a prompt,
-        and asks the LLM to generate an answer based STRICTLY on the context.
-        """
+        """Generate a complete answer from the retrieved context chunks."""
         try:
             logger.info(f"Generating answer for query: '{query}' with {len(context_chunks)} context chunks.")
-            
-            # Format context into a single string
-            context_text = ""
-            for i, chunk in enumerate(context_chunks):
-                text = chunk.get("text", "").strip()
-                file_name = chunk.get("file_name", "Unknown File")
-                context_text += f"\n--- Chunk {i+1} (Source: {file_name}) ---\n{text}\n"
-
-            system_prompt = (
-                "You are an enterprise AI knowledge assistant. You will be provided with context "
-                "from the organization's knowledge base. Answer the user's question based ONLY "
-                "on the provided context. If the answer cannot be found in the context, politely "
-                "state that you do not have that information. Do not hallucinate or use outside knowledge."
-                "\n\nContext:\n"
-                f"{context_text}"
-            )
-            
-            messages = [
-                SystemMessage(content=system_prompt),
-                HumanMessage(content=query)
-            ]
+            messages = self._build_messages(query, context_chunks)
             
             response = self.llm.invoke(messages)
             
