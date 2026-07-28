@@ -12,7 +12,8 @@ class LLMService:
         self.llm = ChatOpenAI(
             openai_api_key=api_key,
             model_name="gpt-4o",  # or gpt-3.5-turbo based on settings
-            temperature=0.0
+            temperature=0.0,
+            streaming=True,
         )
 
     def _build_messages(
