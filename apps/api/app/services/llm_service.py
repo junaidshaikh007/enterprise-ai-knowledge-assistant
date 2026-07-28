@@ -55,10 +55,10 @@ class LLMService:
             logger.error(f"Failed to generate answer: {e}")
             return "I'm sorry, I encountered an error while trying to generate the answer."
 
-    async def stream_answer_chunks(
+    async def stream_answer(
         self, query: str, context_chunks: List[Dict[str, Any]]
-    ) -> AsyncIterator[Any]:
-        """Asynchronously yield raw response chunks from the configured LLM."""
+    ) -> AsyncIterator[str]:
+        """Asynchronously yield non-empty text tokens from the configured LLM."""
         logger.info(
             "Streaming answer for query: '%s' with %d context chunks.",
             query,
@@ -67,6 +67,8 @@ class LLMService:
         messages = self._build_messages(query, context_chunks)
 
         async for chunk in self.llm.astream(messages):
-            yield chunk
+            content = chunk.content
+            if isinstance(content, str) and content:
+                yield content
 
 llm_service = LLMService()
