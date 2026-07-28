@@ -64,11 +64,15 @@ class LLMService:
             query,
             len(context_chunks),
         )
-        messages = self._build_messages(query, context_chunks)
+        try:
+            messages = self._build_messages(query, context_chunks)
 
-        async for chunk in self.llm.astream(messages):
-            content = chunk.content
-            if isinstance(content, str) and content:
-                yield content
+            async for chunk in self.llm.astream(messages):
+                content = chunk.content
+                if isinstance(content, str) and content:
+                    yield content
+        except Exception:
+            logger.exception("Failed to stream answer from LLM.")
+            yield "I'm sorry, I encountered an error while trying to generate the answer."
 
 llm_service = LLMService()
