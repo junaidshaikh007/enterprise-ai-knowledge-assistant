@@ -25,7 +25,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
 ### ⚪ Section 2: Response Streaming via SSE (Days 8–12)
 * **[x] Day 8**: Update the backend `llm_service.py` to yield tokens asynchronously from OpenAI's API.
   * *Commit:* `feat: modify llm service to yield tokens asynchronously`
-* **[ ] Day 9**: Upgrade the `/api/v1/chat` POST route to return a FastAPI `StreamingResponse` using Server-Sent Events (SSE).
+* **[x] Day 9**: Upgrade the `/api/v1/chat` POST route to return a FastAPI `StreamingResponse` using Server-Sent Events (SSE).
   * *Commit:* `feat: implement server-sent events for chat endpoint`
 * **[ ] Day 10**: Create a python validation script in `scratch/` to test and print the stream output.
   * *Commit:* `test: add helper script to verify sse stream output`

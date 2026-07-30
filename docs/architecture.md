@@ -16,6 +16,15 @@ The Enterprise AI Knowledge Assistant is a multi-tenant RAG (Retrieval-Augmented
 - **Ingestion:** User uploads a document -> API saves to MinIO -> API creates a Celery task -> Worker downloads from MinIO, extracts text, chunks, embeds, and stores in Qdrant -> Updates PostgreSQL with metadata.
 - **Retrieval & Q&A:** User asks a question -> API generates query embedding -> Qdrant performs hybrid search -> API retrieves context -> LLM generates grounded answer with citations -> Frontend streams response.
 
+## Chat Streaming Contract
+`POST /api/v1/chat/` returns a `text/event-stream` response. Each event contains a JSON payload:
+
+- `sources`: emitted first with the retrieved document chunks in `{ "sources": [...] }`.
+- `token`: emitted once for each generated text fragment in `{ "token": "..." }`.
+- `done`: emitted once after generation completes as `{ "done": true }`.
+
+Clients should append `token` values in order, render the source metadata when it arrives, and finish the active response after `done`.
+
 ## RAG Pipeline
 - Utilizes LlamaIndex for orchestration.
 - Dense (semantic) and Sparse (keyword) retrieval combined with Hybrid Fusion.
