@@ -3,6 +3,8 @@
 import argparse
 import json
 import os
+import sys
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
@@ -69,8 +71,15 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Send one chat request and print its streamed SSE events."""
     args = parse_args()
-    with open_sse_stream(args.api_url, args.message, args.access_token) as response:
-        print_sse_lines(response)
+    try:
+        with open_sse_stream(args.api_url, args.message, args.access_token) as response:
+            print_sse_lines(response)
+    except HTTPError as error:
+        print(f"Request failed with HTTP {error.code}: {error.reason}", file=sys.stderr)
+        raise SystemExit(1) from error
+    except URLError as error:
+        print(f"Could not connect to the API: {error.reason}", file=sys.stderr)
+        raise SystemExit(1) from error
 
 
 if __name__ == "__main__":
