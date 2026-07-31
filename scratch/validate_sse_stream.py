@@ -3,6 +3,7 @@
 import argparse
 import json
 import os
+from urllib.request import Request, urlopen
 
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/chat/"
@@ -22,6 +23,17 @@ def build_headers(access_token: str | None) -> dict[str, str]:
 def build_request_body(message: str) -> bytes:
     """Serialize the chat request in the format accepted by the API."""
     return json.dumps({"message": message}).encode("utf-8")
+
+
+def open_sse_stream(api_url: str, message: str, access_token: str | None):
+    """Open the authenticated chat request and return its streaming response."""
+    request = Request(
+        api_url,
+        data=build_request_body(message),
+        headers=build_headers(access_token),
+        method="POST",
+    )
+    return urlopen(request, timeout=30)
 
 
 def parse_args() -> argparse.Namespace:
