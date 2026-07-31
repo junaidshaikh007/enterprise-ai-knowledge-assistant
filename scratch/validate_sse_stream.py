@@ -7,6 +7,17 @@ import os
 DEFAULT_API_URL = "http://localhost:8000/api/v1/chat/"
 
 
+def build_headers(access_token: str | None) -> dict[str, str]:
+    """Build the headers expected by the authenticated SSE chat endpoint."""
+    headers = {
+        "Accept": "text/event-stream",
+        "Content-Type": "application/json",
+    }
+    if access_token:
+        headers["Authorization"] = f"Bearer {access_token}"
+    return headers
+
+
 def parse_args() -> argparse.Namespace:
     """Read the connection details and question for one manual stream check."""
     parser = argparse.ArgumentParser(
