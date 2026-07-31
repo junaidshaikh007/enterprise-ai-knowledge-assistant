@@ -1,6 +1,7 @@
 """Manually validate the chat API's Server-Sent Events response."""
 
 import argparse
+import json
 import os
 
 
@@ -16,6 +17,11 @@ def build_headers(access_token: str | None) -> dict[str, str]:
     if access_token:
         headers["Authorization"] = f"Bearer {access_token}"
     return headers
+
+
+def build_request_body(message: str) -> bytes:
+    """Serialize the chat request in the format accepted by the API."""
+    return json.dumps({"message": message}).encode("utf-8")
 
 
 def parse_args() -> argparse.Namespace:
