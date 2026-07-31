@@ -66,5 +66,12 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def main() -> None:
+    """Send one chat request and print its streamed SSE events."""
+    args = parse_args()
+    with open_sse_stream(args.api_url, args.message, args.access_token) as response:
+        print_sse_lines(response)
+
+
 if __name__ == "__main__":
-    parse_args()
+    main()
