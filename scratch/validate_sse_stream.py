@@ -36,6 +36,14 @@ def open_sse_stream(api_url: str, message: str, access_token: str | None):
     return urlopen(request, timeout=30)
 
 
+def print_sse_lines(response) -> None:
+    """Print each non-empty SSE line as soon as the server sends it."""
+    for raw_line in response:
+        line = raw_line.decode("utf-8").strip()
+        if line:
+            print(line)
+
+
 def parse_args() -> argparse.Namespace:
     """Read the connection details and question for one manual stream check."""
     parser = argparse.ArgumentParser(
