@@ -27,7 +27,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: modify llm service to yield tokens asynchronously`
 * **[x] Day 9**: Upgrade the `/api/v1/chat` POST route to return a FastAPI `StreamingResponse` using Server-Sent Events (SSE).
   * *Commit:* `feat: implement server-sent events for chat endpoint`
-* **[ ] Day 10**: Create a python validation script in `scratch/` to test and print the stream output.
+* **[x] Day 10**: Create a python validation script in `scratch/` to test and print the stream output.
   * *Commit:* `test: add helper script to verify sse stream output`
 * **[ ] Day 11**: Write a custom React hook/utility in the frontend to process chunked SSE streams using `ReadableStream`.
   * *Commit:* `feat: implement frontend readable stream reader for sse`
