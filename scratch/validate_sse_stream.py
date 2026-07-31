@@ -1,6 +1,7 @@
 """Manually validate the chat API's Server-Sent Events response."""
 
 import argparse
+import os
 
 
 DEFAULT_API_URL = "http://localhost:8000/api/v1/chat/"
@@ -19,6 +20,11 @@ def parse_args() -> argparse.Namespace:
         "--api-url",
         default=DEFAULT_API_URL,
         help=f"Chat endpoint URL (default: {DEFAULT_API_URL}).",
+    )
+    parser.add_argument(
+        "--access-token",
+        default=os.getenv("ACCESS_TOKEN"),
+        help="JWT access token (defaults to the ACCESS_TOKEN environment variable).",
     )
     return parser.parse_args()
 
