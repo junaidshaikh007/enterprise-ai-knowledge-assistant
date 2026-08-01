@@ -37,3 +37,39 @@ export function parseChatStreamEvent(message: string): ChatStreamEvent | null {
 
   return null;
 }
+
+/** Read a fetch response incrementally and emit each complete SSE chat event. */
+export async function readChatStream(
+  response: Response,
+  onEvent: (event: ChatStreamEvent) => void,
+): Promise<void> {
+  if (!response.body) {
+    throw new Error("The chat response did not include a readable stream.");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      let separatorIndex = buffer.indexOf("\n\n");
+
+      while (separatorIndex !== -1) {
+        const message = buffer.slice(0, separatorIndex);
+        buffer = buffer.slice(separatorIndex + 2);
+
+        const event = parseChatStreamEvent(message);
+        if (event) onEvent(event);
+
+        separatorIndex = buffer.indexOf("\n\n");
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+}
