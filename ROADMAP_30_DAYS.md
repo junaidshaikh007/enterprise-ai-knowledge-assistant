@@ -29,7 +29,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: implement server-sent events for chat endpoint`
 * **[x] Day 10**: Create a python validation script in `scratch/` to test and print the stream output.
   * *Commit:* `test: add helper script to verify sse stream output`
-* **[ ] Day 11**: Write a custom React hook/utility in the frontend to process chunked SSE streams using `ReadableStream`.
+* **[x] Day 11**: Write a custom React hook/utility in the frontend to process chunked SSE streams using `ReadableStream`.
   * *Commit:* `feat: implement frontend readable stream reader for sse`
 * **[ ] Day 12**: Wire the SSE streaming reader into the Next.js chat page to show tokens rendering in real-time.
   * *Commit:* `feat: connect chat UI to streaming response stream`

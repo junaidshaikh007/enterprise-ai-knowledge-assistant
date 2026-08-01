@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { ChatSidebar, ChatSession } from "@/components/ChatSidebar";
 import { ChatMessage, Message } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
+import { useChatStream } from "@/hooks/useChatStream";
 const SEED_SESSIONS: ChatSession[] = [
   {
     id: "1",
@@ -38,8 +39,8 @@ export default function ChatPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { streamChat, isStreaming: isLoading } = useChatStream();
 
   /* ─── Handlers ─── */
   const handleNewChat = () => {
@@ -64,37 +65,44 @@ export default function ChatPage() {
       content: query,
       timestamp: new Date(),
     };
+    const assistantMessageId = crypto.randomUUID();
+    const assistantMsg: Message = {
+      id: assistantMessageId,
+      role: "assistant",
+      content: "",
+      timestamp: new Date(),
+    };
 
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
     setInput("");
-    setIsLoading(true);
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:8000/api/v1/chat/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      await streamChat({
+        message: query,
+        accessToken: token,
+        onToken: (streamedToken) => {
+          setMessages((prev) => prev.map((message) => (
+            message.id === assistantMessageId
+              ? { ...message, content: message.content + streamedToken }
+              : message
+          )));
         },
-        body: JSON.stringify({ message: query }),
+        onSources: (sources) => {
+          setMessages((prev) => prev.map((message) => (
+            message.id === assistantMessageId
+              ? {
+                  ...message,
+                  sources: sources.map((source, index) => ({
+                    id: `source-${index}`,
+                    documentName: source.file_name,
+                    confidenceScore: source.score,
+                  })),
+                }
+              : message
+          )));
+        },
       });
-
-      if (!res.ok) throw new Error("Chat request failed");
-      const data = await res.json();
-
-      const assistantMsg: Message = {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        content: data.answer ?? "Sorry, I could not generate a response.",
-        timestamp: new Date(),
-        sources: data.sources?.map((s: any, idx: number) => ({
-          id: `source-${idx}`,
-          documentName: s.file_name,
-          confidenceScore: s.score
-        }))
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
     } catch {
       const errMsg: Message = {
         id: crypto.randomUUID(),
@@ -102,9 +110,11 @@ export default function ChatPage() {
         content: "⚠️ Something went wrong. Please check the backend and try again.",
         timestamp: new Date(),
       };
-      setMessages((prev) => [...prev, errMsg]);
-    } finally {
-      setIsLoading(false);
+      setMessages((prev) => prev.map((message) => (
+        message.id === assistantMessageId
+          ? { ...message, content: errMsg.content }
+          : message
+      )));
     }
   };
 
