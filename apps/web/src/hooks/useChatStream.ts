@@ -8,6 +8,7 @@ const CHAT_API_URL = "http://localhost:8000/api/v1/chat/";
 
 type StreamChatOptions = {
   message: string;
+  session_id?: string;
   accessToken: string | null;
   onToken: (token: string) => void;
   onSources: (sources: StreamSource[]) => void;
@@ -20,6 +21,7 @@ export function useChatStream() {
 
   const streamChat = useCallback(async ({
     message,
+    session_id,
     accessToken,
     onToken,
     onSources,
@@ -34,7 +36,7 @@ export function useChatStream() {
       const response = await fetch(CHAT_API_URL, {
         method: "POST",
         headers,
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, session_id }),
       });
 
       if (!response.ok) {

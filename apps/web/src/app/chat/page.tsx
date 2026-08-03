@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChatSidebar, ChatSession } from "@/components/ChatSidebar";
 import { ChatMessage, Message } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -35,7 +35,7 @@ const WELCOME_SUGGESTIONS = [
 
 /* ─── Page Component ─── */
 export default function ChatPage() {
-  const [sessions] = useState<ChatSession[]>(SEED_SESSIONS);
+  const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -49,15 +49,91 @@ export default function ChatPage() {
     setInput("");
   };
 
-  const handleSelectSession = (id: string) => {
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:8000/api/v1/sessions/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSessions(
+            data.map((s: any) => ({
+              id: s.id,
+              title: s.title || "New Chat",
+              lastMessage: "...",
+              timestamp: new Date(s.updated_at || s.created_at).toLocaleString(),
+            }))
+          );
+        }
+      } catch (e) {
+        console.error("Failed to load sessions", e);
+      }
+    };
+    fetchSessions();
+  }, []);
+
+  const handleSelectSession = async (id: string) => {
     setActiveSessionId(id);
-    // Future: load messages from DB
     setMessages([]);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`http://localhost:8000/api/v1/sessions/${id}/messages`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(
+          data.map((m: any) => ({
+            id: m.id,
+            role: m.role,
+            content: m.content,
+            timestamp: new Date(m.created_at),
+          }))
+        );
+      }
+    } catch (e) {
+      console.error("Failed to load messages", e);
+    }
   };
 
   const handleSend = async (text?: string) => {
     const query = text ?? input.trim();
     if (!query || isLoading) return;
+
+    let targetSessionId = activeSessionId;
+    if (!targetSessionId) {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch("http://localhost:8000/api/v1/sessions/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ title: query.substring(0, 30) + (query.length > 30 ? "..." : "") })
+        });
+        if (res.ok) {
+          const newSession = await res.json();
+          targetSessionId = newSession.id;
+          setActiveSessionId(newSession.id);
+          setSessions((prev) => [
+            {
+              id: newSession.id,
+              title: newSession.title,
+              lastMessage: query,
+              timestamp: new Date().toLocaleString(),
+            },
+            ...prev
+          ]);
+        }
+      } catch (e) {
+        console.error("Failed to create session", e);
+      }
+    } else {
+        setSessions((prev) => prev.map(s => s.id === targetSessionId ? { ...s, lastMessage: query } : s));
+    }
 
     const userMsg: Message = {
       id: crypto.randomUUID(),
@@ -80,6 +156,7 @@ export default function ChatPage() {
       const token = localStorage.getItem("token");
       await streamChat({
         message: query,
+        session_id: targetSessionId || undefined,
         accessToken: token,
         onToken: (streamedToken) => {
           setMessages((prev) => prev.map((message) => (

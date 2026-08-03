@@ -47,7 +47,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: build api endpoint to fetch session message history`
 * **[x] Day 17**: Update the `/chat` controller to save new questions and answers in PostgreSQL dynamically.
   * *Commit:* `feat: persist conversations to database on chat completion`
-* **[ ] Day 18**: Connect the Next.js sidebar and load chat histories dynamically when a session is selected.
+* **[x] Day 18**: Connect the Next.js sidebar and load chat histories dynamically when a session is selected.
   * *Commit:* `feat: integrate database chat history in frontend sidebar`
 
 ---
