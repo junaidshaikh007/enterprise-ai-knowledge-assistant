@@ -5,6 +5,7 @@ from datetime import datetime
 
 class ChatRequest(BaseModel):
     message: str
+    session_id: Optional[uuid.UUID] = None
 
 class ChatSource(BaseModel):
     score: float

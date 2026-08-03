@@ -9,9 +9,11 @@ from app.core.deps import get_current_active_user, get_current_organization
 from app.models.user import User
 from app.models.organization import Organization
 from app.schemas.chat import ChatRequest
+from app.models.chat import ChatMessage
 from app.services.retrieval_service import retrieval_service
 from app.services.llm_service import llm_service
 from app.api.v1.sse import format_sse_event
+from app.core.database import AsyncSessionLocal
 
 router = APIRouter()
 
@@ -32,17 +34,39 @@ async def chat(
             organization_id=current_org.id,
             top_k=5
         )
+        session_id = request.session_id
         
+        if session_id:
+            user_msg = ChatMessage(
+                session_id=session_id,
+                role="user",
+                content=request.message
+            )
+            db.add(user_msg)
+            await db.commit()
+
         async def event_stream() -> AsyncIterator[str]:
             yield format_sse_event({"sources": context}, event="sources")
 
+            full_answer = ""
             async for token in llm_service.stream_answer(
                 query=request.message,
                 context_chunks=context,
             ):
+                full_answer += token
                 yield format_sse_event({"token": token}, event="token")
 
             yield format_sse_event({"done": True}, event="done")
+
+            if session_id:
+                async with AsyncSessionLocal() as bg_db:
+                    assistant_msg = ChatMessage(
+                        session_id=session_id,
+                        role="assistant",
+                        content=full_answer
+                    )
+                    bg_db.add(assistant_msg)
+                    await bg_db.commit()
 
         return StreamingResponse(
             event_stream(),
