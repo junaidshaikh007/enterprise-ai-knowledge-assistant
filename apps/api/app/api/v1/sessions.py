@@ -8,8 +8,8 @@ from app.core.database import get_db
 from app.core.deps import get_current_active_user, get_current_organization
 from app.models.user import User
 from app.models.organization import Organization
-from app.models.chat import ChatSession
-from app.schemas.chat import ChatSessionResponse, ChatSessionCreate
+from app.models.chat import ChatSession, ChatMessage
+from app.schemas.chat import ChatSessionResponse, ChatSessionCreate, ChatMessageResponse
 
 router = APIRouter()
 
@@ -64,3 +64,26 @@ async def delete_chat_session(
         
     await db.delete(session)
     await db.commit()
+
+@router.get("/{session_id}/messages", response_model=List[ChatMessageResponse])
+async def fetch_session_messages(
+    session_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    current_org: Organization = Depends(get_current_organization),
+    db: AsyncSession = Depends(get_db)
+):
+    session_result = await db.execute(
+        select(ChatSession)
+        .where(ChatSession.id == session_id)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatSession.organization_id == current_org.id)
+    )
+    if not session_result.scalars().first():
+        raise HTTPException(status_code=404, detail="Chat session not found")
+        
+    messages_result = await db.execute(
+        select(ChatMessage)
+        .where(ChatMessage.session_id == session_id)
+        .order_by(ChatMessage.created_at.asc())
+    )
+    return messages_result.scalars().all()

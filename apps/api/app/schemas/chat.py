@@ -26,3 +26,13 @@ class ChatSessionResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ChatMessageResponse(BaseModel):
+    id: uuid.UUID
+    session_id: uuid.UUID
+    role: str
+    content: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True

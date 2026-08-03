@@ -43,7 +43,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `chore: run migrations for chat history tables`
 * **[x] Day 15**: Create API endpoints to create, fetch, and delete chat sessions.
   * *Commit:* `feat: build api endpoints for chat sessions`
-* **[ ] Day 16**: Create API endpoint to load messages for a specific session.
+* **[x] Day 16**: Create API endpoint to load messages for a specific session.
   * *Commit:* `feat: build api endpoint to fetch session message history`
 * **[ ] Day 17**: Update the `/chat` controller to save new questions and answers in PostgreSQL dynamically.
   * *Commit:* `feat: persist conversations to database on chat completion`
