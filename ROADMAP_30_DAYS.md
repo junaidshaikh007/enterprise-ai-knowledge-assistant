@@ -39,9 +39,9 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
 ### ⚪ Section 3: Conversation Memory & Database History (Days 13–18)
 * **[x] Day 13**: Define SQLAlchemy models for `ChatSession` and `ChatMessage` with tenant foreign key relations.
   * *Commit:* `feat: create database models for chat sessions and history`
-* **[ ] Day 14**: Autogenerate and apply Alembic migrations for the new chat tables.
+* **[x] Day 14**: Autogenerate and apply Alembic migrations for the new chat tables.
   * *Commit:* `chore: run migrations for chat history tables`
-* **[ ] Day 15**: Create API endpoints to create, fetch, and delete chat sessions.
+* **[x] Day 15**: Create API endpoints to create, fetch, and delete chat sessions.
   * *Commit:* `feat: build api endpoints for chat sessions`
 * **[ ] Day 16**: Create API endpoint to load messages for a specific session.
   * *Commit:* `feat: build api endpoint to fetch session message history`
