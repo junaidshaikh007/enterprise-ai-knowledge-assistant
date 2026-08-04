@@ -21,6 +21,17 @@ class Settings(BaseSettings):
     QDRANT_PORT: int = 6333
     QDRANT_API_KEY: Optional[str] = None
     
+    # Redis & Celery
+    REDIS_URL: str = "redis://localhost:6379/0"
+
+    @property
+    def CELERY_BROKER_URL(self) -> str:
+        return self.REDIS_URL
+
+    @property
+    def CELERY_RESULT_BACKEND(self) -> str:
+        return self.REDIS_URL
+
     # LLM & Embeddings
     OPENAI_API_KEY: Optional[str] = None
     EMBEDDING_MODEL: str = "text-embedding-3-small"

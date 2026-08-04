@@ -55,7 +55,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
 ### ⚪ Section 4: Asynchronous Processing via Celery & Redis (Days 19–25)
 * **[x] Day 19**: Add Redis image to Docker Compose and add `celery` + `redis` dependencies to requirements.
   * *Commit:* `chore: configure redis container and backend celery dependencies`
-* **[ ] Day 20**: Initialize the Celery application (`celery_app.py`) and setup worker configurations.
+* **[x] Day 20**: Initialize the Celery application (`celery_app.py`) and setup worker configurations.
   * *Commit:* `chore: initialize celery application instance`
 * **[ ] Day 21**: Migrate document parsing, chunking, and embedding logic into a background Celery task.
   * *Commit:* `feat: create document ingestion celery task`
