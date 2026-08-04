@@ -57,7 +57,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `chore: configure redis container and backend celery dependencies`
 * **[x] Day 20**: Initialize the Celery application (`celery_app.py`) and setup worker configurations.
   * *Commit:* `chore: initialize celery application instance`
-* **[ ] Day 21**: Migrate document parsing, chunking, and embedding logic into a background Celery task.
+* **[x] Day 21**: Migrate document parsing, chunking, and embedding logic into a background Celery task.
   * *Commit:* `feat: create document ingestion celery task`
 * **[ ] Day 22**: Add a processing status tracking field (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`) to the document database model.
   * *Commit:* `feat: add status field and tracker to document models`
