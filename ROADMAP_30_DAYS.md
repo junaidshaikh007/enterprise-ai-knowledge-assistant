@@ -59,7 +59,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `chore: initialize celery application instance`
 * **[x] Day 21**: Migrate document parsing, chunking, and embedding logic into a background Celery task.
   * *Commit:* `feat: create document ingestion celery task`
-* **[ ] Day 22**: Add a processing status tracking field (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`) to the document database model.
+* **[x] Day 22**: Add a processing status tracking field (`PENDING`, `PROCESSING`, `SUCCESS`, `FAILED`) to the document database model.
   * *Commit:* `feat: add status field and tracker to document models`
 * **[ ] Day 23**: Update the `/upload` API endpoint to register the document in DB and trigger the Celery task asynchronously.
   * *Commit:* `feat: make document upload API asynchronous via task queue`
