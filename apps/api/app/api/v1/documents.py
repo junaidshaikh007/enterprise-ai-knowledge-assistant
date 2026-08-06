@@ -9,10 +9,11 @@ from app.models.user import User
 from app.models.organization import Organization
 from app.models.document import Document, ProcessingStatus
 from app.worker.tasks import ingest_document
+from app.schemas.document import DocumentUploadResponse
 
 router = APIRouter()
 
-@router.post("/upload", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/upload", status_code=status.HTTP_202_ACCEPTED, response_model=DocumentUploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_active_user),
