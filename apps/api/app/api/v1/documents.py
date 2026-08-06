@@ -1,13 +1,15 @@
+import base64
+
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
-from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, get_current_organization
 from app.models.user import User
 from app.models.organization import Organization
-from app.utils.document_parser import document_parser
-from app.services.embedding_service import embedding_service
+from app.models.document import Document, ProcessingStatus
+from app.worker.tasks import ingest_document
+
 router = APIRouter()
 
 @router.post("/upload")
