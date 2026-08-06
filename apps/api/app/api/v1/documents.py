@@ -1,6 +1,8 @@
 import base64
+from typing import List
 
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -9,7 +11,7 @@ from app.models.user import User
 from app.models.organization import Organization
 from app.models.document import Document, ProcessingStatus
 from app.worker.tasks import ingest_document
-from app.schemas.document import DocumentUploadResponse
+from app.schemas.document import DocumentUploadResponse, DocumentListItem
 
 router = APIRouter()
 
@@ -75,3 +77,34 @@ async def upload_document(
         "status": ProcessingStatus.PENDING,
         "message": "Document accepted. Ingestion running in background.",
     }
+
+
+@router.get("/", response_model=List[DocumentListItem])
+async def list_documents(
+    current_user: User = Depends(get_current_active_user),
+    current_org: Organization = Depends(get_current_organization),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return all documents belonging to the current organisation,
+    ordered from newest to oldest.
+    """
+    result = await db.execute(
+        select(Document)
+        .where(Document.organization_id == current_org.id)
+        .order_by(Document.created_at.desc())
+    )
+    docs = result.scalars().all()
+
+    return [
+        DocumentListItem(
+            document_id=doc.id,
+            filename=doc.file_name,
+            file_ext=doc.file_ext,
+            file_size=doc.file_size,
+            status=doc.status,
+            num_chunks=doc.num_chunks,
+            created_at=doc.created_at,
+        )
+        for doc in docs
+    ]
