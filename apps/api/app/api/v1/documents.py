@@ -12,54 +12,65 @@ from app.worker.tasks import ingest_document
 
 router = APIRouter()
 
-@router.post("/upload")
+@router.post("/upload", status_code=status.HTTP_202_ACCEPTED)
 async def upload_document(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_active_user),
     current_org: Organization = Depends(get_current_organization),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
-    Upload a document for processing.
+    Accept a document upload, persist a DB record, and dispatch
+    the ingestion work to a Celery background task.
+
+    Returns 202 Accepted immediately with the document_id so the
+    caller can poll /documents/{doc_id}/status for completion.
     """
+    # ── 1. Validate file extension ──────────────────────────────────────────
     allowed_extensions = ["pdf", "txt", "docx"]
     file_ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
-    
+
     if file_ext not in allowed_extensions:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"File extension not allowed. Allowed types: {', '.join(allowed_extensions)}"
-        )
-        
-    # Read file content
-    content = await file.read()
-    
-    try:
-        chunks = document_parser.process_document(content, file_ext)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error processing document: {str(e)}"
-        )
-    
-    # Embed and store in Qdrant
-    success = embedding_service.embed_and_store_chunks(
-        chunks=chunks,
-        organization_id=current_org.id,
-        file_name=file.filename
-    )
-    
-    if not success:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate embeddings and store in Vector DB."
+            detail=f"File extension not allowed. Allowed types: {', '.join(allowed_extensions)}",
         )
 
+    # ── 2. Read raw bytes ───────────────────────────────────────────────────
+    content: bytes = await file.read()
+
+    # ── 3. Register document row in DB (status = PENDING) ──────────────────
+    doc = Document(
+        file_name=file.filename,
+        file_ext=file_ext,
+        file_size=len(content),
+        status=ProcessingStatus.PENDING,
+        user_id=current_user.id,
+        organization_id=current_org.id,
+    )
+    db.add(doc)
+    await db.commit()
+    await db.refresh(doc)
+
+    # ── 4. Dispatch Celery task (non-blocking) ──────────────────────────────
+    file_content_b64 = base64.b64encode(content).decode("utf-8")
+    task = ingest_document.delay(
+        file_content_b64=file_content_b64,
+        file_ext=file_ext,
+        file_name=file.filename,
+        organization_id=str(current_org.id),
+        document_id=str(doc.id),
+    )
+
+    # ── 5. Store the Celery task ID for status lookups ──────────────────────
+    doc.task_id = task.id
+    await db.commit()
+
     return {
+        "document_id": str(doc.id),
+        "task_id": task.id,
         "filename": file.filename,
-        "content_type": file.content_type,
-        "size": len(content),
-        "status": "embedded_and_stored",
-        "num_chunks": len(chunks),
-        "message": "File successfully parsed, embedded, and stored in Vector DB."
+        "file_size": len(content),
+        "status": ProcessingStatus.PENDING,
+        "message": "Document accepted. Ingestion running in background.",
     }
