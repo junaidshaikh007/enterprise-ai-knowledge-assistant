@@ -1,4 +1,5 @@
 import base64
+import uuid
 from typing import List
 
 from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
@@ -108,3 +109,34 @@ async def list_documents(
         )
         for doc in docs
     ]
+
+
+@router.delete("/{doc_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_document(
+    doc_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    current_org: Organization = Depends(get_current_organization),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Delete a document record by ID.
+
+    Only documents belonging to the current organisation can be deleted
+    (multi-tenant isolation enforced).
+    """
+    result = await db.execute(
+        select(Document).where(
+            Document.id == doc_id,
+            Document.organization_id == current_org.id,
+        )
+    )
+    doc = result.scalar_one_or_none()
+
+    if doc is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found or access denied.",
+        )
+
+    await db.delete(doc)
+    await db.commit()
