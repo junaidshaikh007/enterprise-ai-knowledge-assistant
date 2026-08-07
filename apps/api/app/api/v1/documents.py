@@ -159,3 +159,22 @@ async def get_document_status(
         )
     )
     doc = result.scalar_one_or_none()
+
+    if doc is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Document not found or access denied.",
+        )
+
+    return DocumentStatusResponse(
+        document_id=doc.id,
+        filename=doc.file_name,
+        file_ext=doc.file_ext,
+        file_size=doc.file_size,
+        status=doc.status,
+        task_id=doc.task_id,
+        num_chunks=doc.num_chunks,
+        error_message=doc.error_message,
+        created_at=doc.created_at,
+        updated_at=doc.updated_at,
+    )

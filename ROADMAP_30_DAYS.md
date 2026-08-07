@@ -63,7 +63,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: add status field and tracker to document models`
 * **[x] Day 23**: Update the `/upload` API endpoint to register the document in DB and trigger the Celery task asynchronously.
   * *Commit:* `feat: make document upload API asynchronous via task queue`
-* **[ ] Day 24**: Create a document status checking endpoint (`/documents/{doc_id}/status`) to verify completion.
+* **[x] Day 24**: Create a document status checking endpoint (`/documents/{doc_id}/status`) to verify completion.
   * *Commit:* `feat: add api endpoint to poll document ingestion status`
 * **[ ] Day 25**: Implement visual upload progress and processing states in Next.js by polling the status API.
   * *Commit:* `feat: add ingestion progress indicator to dashboard UI`
