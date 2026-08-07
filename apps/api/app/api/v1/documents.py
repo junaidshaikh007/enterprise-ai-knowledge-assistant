@@ -140,3 +140,22 @@ async def delete_document(
 
     await db.delete(doc)
     await db.commit()
+
+
+@router.get("/{doc_id}/status", response_model=DocumentStatusResponse)
+async def get_document_status(
+    doc_id: uuid.UUID,
+    current_user: User = Depends(get_current_active_user),
+    current_org: Organization = Depends(get_current_organization),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Check the current processing status of an uploaded document.
+    """
+    result = await db.execute(
+        select(Document).where(
+            Document.id == doc_id,
+            Document.organization_id == current_org.id,
+        )
+    )
+    doc = result.scalar_one_or_none()
