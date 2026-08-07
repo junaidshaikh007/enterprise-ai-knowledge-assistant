@@ -1,13 +1,34 @@
 "use client";
-
 import React, { useState, useRef } from "react";
+import { useDocumentStatus } from "@/hooks/useDocumentStatus";
 
-export function DocumentUpload() {
+interface DocumentUploadProps {
+  onUploadComplete?: () => void;
+}
+
+export function DocumentUpload({ onUploadComplete }: DocumentUploadProps = {}) {
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [activeDocId, setActiveDocId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Hook for polling the active document status during background ingestion
+  useDocumentStatus(activeDocId, {
+    onSuccess: (doc) => {
+      setStatus("success");
+      setMessage(`"${doc.filename}" processed successfully! Created ${doc.num_chunks} chunks.`);
+      setActiveDocId(null);
+      if (onUploadComplete) onUploadComplete();
+    },
+    onError: (err) => {
+      setStatus("error");
+      setMessage(`Processing failed: ${err}`);
+      setActiveDocId(null);
+      if (onUploadComplete) onUploadComplete();
+    },
+  });
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -59,8 +80,10 @@ export function DocumentUpload() {
       }
 
       const data = await res.json();
-      setStatus("success");
-      setMessage(data.message || "Upload successful!");
+      setStatus("processing");
+      setMessage("Upload successful. Analyzing and indexing document...");
+      setActiveDocId(data.document_id);
+      if (onUploadComplete) onUploadComplete(); // Refresh list to show pending
     } catch (err: any) {
       setStatus("error");
       setMessage(err.message || "An error occurred during upload.");
