@@ -12,7 +12,7 @@ from app.models.user import User
 from app.models.organization import Organization
 from app.models.document import Document, ProcessingStatus
 from app.worker.tasks import ingest_document
-from app.schemas.document import DocumentUploadResponse, DocumentListItem
+from app.schemas.document import DocumentUploadResponse, DocumentListItem, DocumentStatusResponse
 
 router = APIRouter()
 
