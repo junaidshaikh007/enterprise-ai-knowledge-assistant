@@ -3,6 +3,7 @@ from typing import Any, AsyncIterator, Dict, List
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from app.core.config import settings
+from langfuse import observe, get_client
 
 logger = logging.getLogger(__name__)
 
@@ -40,21 +41,26 @@ class LLMService:
             HumanMessage(content=query),
         ]
 
+    @observe()
     def generate_answer(self, query: str, context_chunks: List[Dict[str, Any]]) -> str:
         """Generate a complete answer from the retrieved context chunks."""
         try:
             logger.info(f"Generating answer for query: '{query}' with {len(context_chunks)} context chunks.")
             messages = self._build_messages(query, context_chunks)
-            
+            get_client().update_current_span(
+                input={"query": query, "num_chunks": len(context_chunks)}
+            )
             response = self.llm.invoke(messages)
             
             logger.info("Answer generated successfully.")
+            get_client().update_current_span(output=response.content)
             return response.content
 
         except Exception as e:
             logger.error(f"Failed to generate answer: {e}")
             return "I'm sorry, I encountered an error while trying to generate the answer."
 
+    @observe()
     async def stream_answer(
         self, query: str, context_chunks: List[Dict[str, Any]]
     ) -> AsyncIterator[str]:
@@ -66,7 +72,9 @@ class LLMService:
         )
         try:
             messages = self._build_messages(query, context_chunks)
-
+            get_client().update_current_span(
+                input={"query": query, "num_chunks": len(context_chunks)}
+            )
             async for chunk in self.llm.astream(messages):
                 content = chunk.content
                 if isinstance(content, str) and content:

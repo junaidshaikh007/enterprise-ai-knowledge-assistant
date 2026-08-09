@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
+from langfuse import observe, get_client
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, get_current_organization
@@ -18,6 +19,7 @@ from app.core.database import AsyncSessionLocal
 router = APIRouter()
 
 @router.post("/")
+@observe(name="chat_request")
 async def chat(
     request: ChatRequest,
     current_user: User = Depends(get_current_active_user),
@@ -28,6 +30,13 @@ async def chat(
     Endpoint to ask questions based on the uploaded organization documents.
     """
     try:
+        # Update trace level details in Langfuse for observability
+        get_client().update_current_span(
+            name="chat_request",
+            input={"message": request.message, "session_id": request.session_id},
+            metadata={"user_id": str(current_user.id), "org_id": str(current_org.id)},
+        )
+
         # Step 1: Retrieve relevant context chunks matching organization_id
         context = retrieval_service.retrieve_context(
             query=request.message,
@@ -57,6 +66,9 @@ async def chat(
                 yield format_sse_event({"token": token}, event="token")
 
             yield format_sse_event({"done": True}, event="done")
+            
+            # Record output trace details in Langfuse
+            get_client().update_current_span(output=full_answer)
 
             if session_id:
                 async with AsyncSessionLocal() as bg_db:

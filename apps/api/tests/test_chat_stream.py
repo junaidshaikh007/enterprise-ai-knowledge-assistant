@@ -76,7 +76,7 @@ def test_chat_returns_sse_sources_tokens_and_completion(monkeypatch):
     response = asyncio.run(
         chat_module.chat(
             request=ChatRequest(message="What is the policy?"),
-            current_user=SimpleNamespace(),
+            current_user=SimpleNamespace(id="user-test-123"),
             current_org=SimpleNamespace(id="org-123"),
             db=SimpleNamespace(),
         )

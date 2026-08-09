@@ -65,13 +65,13 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: make document upload API asynchronous via task queue`
 * **[x] Day 24**: Create a document status checking endpoint (`/documents/{doc_id}/status`) to verify completion.
   * *Commit:* `feat: add api endpoint to poll document ingestion status`
-* **[ ] Day 25**: Implement visual upload progress and processing states in Next.js by polling the status API.
+* **[x] Day 25**: Implement visual upload progress and processing states in Next.js by polling the status API.
   * *Commit:* `feat: add ingestion progress indicator to dashboard UI`
 
 ---
 
 ### ⚪ Section 5: Observability, Evaluation & Deployment (Days 26–30)
-* **[ ] Day 26**: Integrate the Langfuse SDK to log and trace vector searches and LLM prompt/response pairs.
+* **[x] Day 26**: Integrate the Langfuse SDK to log and trace vector searches and LLM prompt/response pairs.
   * *Commit:* `feat: integrate langfuse observability and tracing`
 * **[ ] Day 27**: Write automated DeepEval tests to evaluate faithfulness and answer relevance.
   * *Commit:* `test: add deepeval test cases for rag pipelines`

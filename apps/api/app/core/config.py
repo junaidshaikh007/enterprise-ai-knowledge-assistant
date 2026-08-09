@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     EMBEDDING_MODEL: str = "text-embedding-3-small"
 
+    # Observability (Langfuse)
+    LANGFUSE_PUBLIC_KEY: Optional[str] = None
+    LANGFUSE_SECRET_KEY: Optional[str] = None
+    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
@@ -44,3 +49,12 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
+
+import os
+# Ensure Langfuse SDK can read the config from environment variables
+if settings.LANGFUSE_PUBLIC_KEY:
+    os.environ["LANGFUSE_PUBLIC_KEY"] = settings.LANGFUSE_PUBLIC_KEY
+if settings.LANGFUSE_SECRET_KEY:
+    os.environ["LANGFUSE_SECRET_KEY"] = settings.LANGFUSE_SECRET_KEY
+if settings.LANGFUSE_HOST:
+    os.environ["LANGFUSE_HOST"] = settings.LANGFUSE_HOST

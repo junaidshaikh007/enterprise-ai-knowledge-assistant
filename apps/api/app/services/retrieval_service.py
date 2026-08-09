@@ -4,6 +4,7 @@ from langchain_openai import OpenAIEmbeddings
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 from app.core.config import settings
 from app.core.vector_store import vector_store
+from langfuse import observe, get_client
 
 logger = logging.getLogger(__name__)
 
@@ -15,12 +16,18 @@ class RetrievalService:
             model=settings.EMBEDDING_MODEL
         )
 
+    @observe()
     def retrieve_context(self, query: str, organization_id: int, top_k: int = 5) -> List[Dict[str, Any]]:
         """
         Takes a user query, generates an embedding, and retrieves the most relevant
         document chunks from Qdrant, filtered securely by organization_id.
         """
         try:
+            get_client().update_current_span(
+                name="retrieve_context",
+                input={"query": query, "organization_id": organization_id, "top_k": top_k},
+                metadata={"organization_id": organization_id}
+            )
             logger.info(f"Generating embedding for query: '{query}'")
             query_vector = self.embeddings.embed_query(query)
             
@@ -52,9 +59,11 @@ class RetrievalService:
                 })
                 
             logger.info(f"Retrieved {len(context)} relevant chunks.")
+            get_client().update_current_span(output=context)
             return context
             
         except Exception as e:
+            get_client().update_current_span(level="ERROR", status_message=str(e))
             logger.error(f"Failed to retrieve context: {e}")
             return []
 
