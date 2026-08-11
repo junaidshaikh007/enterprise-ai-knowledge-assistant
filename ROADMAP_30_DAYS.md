@@ -73,7 +73,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
 ### ⚪ Section 5: Observability, Evaluation & Deployment (Days 26–30)
 * **[x] Day 26**: Integrate the Langfuse SDK to log and trace vector searches and LLM prompt/response pairs.
   * *Commit:* `feat: integrate langfuse observability and tracing`
-* **[ ] Day 27**: Write automated DeepEval tests to evaluate faithfulness and answer relevance.
+* **[x] Day 27**: Write automated DeepEval tests to evaluate faithfulness and answer relevance.
   * *Commit:* `test: add deepeval test cases for rag pipelines`
 * **[ ] Day 28**: Audit all endpoints to ensure strict tenant validation on `organization_id`.
   * *Commit:* `security: audit multi-tenant request isolation`
