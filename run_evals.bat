@@ -1,0 +1,3 @@
+@echo off
+echo Running DeepEval Test Suite...
+deepeval test run evaluation/
