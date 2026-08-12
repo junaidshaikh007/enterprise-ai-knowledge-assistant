@@ -1,6 +1,7 @@
 import asyncio
 import json
 import sys
+import uuid
 from enum import Enum
 from types import SimpleNamespace
 
@@ -52,6 +53,7 @@ sys.modules.setdefault(
 
 from app.api.v1 import chat as chat_module
 from app.schemas.chat import ChatRequest
+from fastapi import HTTPException
 
 
 class RetrievalServiceStub:
@@ -69,9 +71,31 @@ async def collect_events(response):
     return [event async for event in response.body_iterator]
 
 
+class QueryResultStub:
+    def __init__(self, value):
+        self.value = value
+
+    def scalar_one_or_none(self):
+        return self.value
+
+
+class DatabaseStub:
+    def __init__(self, session):
+        self.session = session
+
+    async def execute(self, _statement):
+        return QueryResultStub(self.session)
+
+
+class LangfuseClientStub:
+    def update_current_span(self, **_kwargs):
+        pass
+
+
 def test_chat_returns_sse_sources_tokens_and_completion(monkeypatch):
     monkeypatch.setattr(chat_module, "retrieval_service", RetrievalServiceStub())
     monkeypatch.setattr(chat_module, "llm_service", LLMServiceStub())
+    monkeypatch.setattr(chat_module, "get_client", LangfuseClientStub)
 
     response = asyncio.run(
         chat_module.chat(
@@ -92,3 +116,23 @@ def test_chat_returns_sse_sources_tokens_and_completion(monkeypatch):
         'event: done\ndata: {"done": true}\n\n',
     ]
     assert json.loads(events[-1].split("data: ", maxsplit=1)[1]) == {"done": True}
+
+
+def test_chat_rejects_a_session_outside_the_current_tenant(monkeypatch):
+    monkeypatch.setattr(chat_module, "get_client", LangfuseClientStub)
+    request = ChatRequest(message="What is the policy?", session_id=uuid.uuid4())
+
+    try:
+        asyncio.run(
+            chat_module.chat(
+                request=request,
+                current_user=SimpleNamespace(id="user-test-123"),
+                current_org=SimpleNamespace(id="org-123"),
+                db=DatabaseStub(session=None),
+            )
+        )
+    except HTTPException as error:
+        assert error.status_code == 404
+        assert error.detail == "Chat session not found"
+    else:  # pragma: no cover - makes the security expectation explicit
+        raise AssertionError("Expected a cross-tenant session to be rejected")

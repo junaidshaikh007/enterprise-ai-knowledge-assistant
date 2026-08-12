@@ -2,6 +2,7 @@ from collections.abc import AsyncIterator
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from langfuse import observe, get_client
 
@@ -10,7 +11,7 @@ from app.core.deps import get_current_active_user, get_current_organization
 from app.models.user import User
 from app.models.organization import Organization
 from app.schemas.chat import ChatRequest
-from app.models.chat import ChatMessage
+from app.models.chat import ChatMessage, ChatSession
 from app.services.retrieval_service import retrieval_service
 from app.services.llm_service import llm_service
 from app.api.v1.sse import format_sse_event
@@ -37,13 +38,27 @@ async def chat(
             metadata={"user_id": str(current_user.id), "org_id": str(current_org.id)},
         )
 
+        session_id = request.session_id
+        if session_id:
+            session_result = await db.execute(
+                select(ChatSession).where(
+                    ChatSession.id == session_id,
+                    ChatSession.user_id == current_user.id,
+                    ChatSession.organization_id == current_org.id,
+                )
+            )
+            if session_result.scalar_one_or_none() is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Chat session not found",
+                )
+
         # Step 1: Retrieve relevant context chunks matching organization_id
         context = retrieval_service.retrieve_context(
             query=request.message,
             organization_id=current_org.id,
             top_k=5
         )
-        session_id = request.session_id
         
         if session_id:
             user_msg = ChatMessage(
@@ -90,6 +105,8 @@ async def chat(
             },
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
