@@ -13,6 +13,27 @@ from app.schemas.chat import ChatSessionResponse, ChatSessionCreate, ChatMessage
 
 router = APIRouter()
 
+
+async def get_owned_chat_session(
+    db: AsyncSession,
+    session_id: uuid.UUID,
+    user_id: uuid.UUID,
+    organization_id: uuid.UUID,
+) -> ChatSession:
+    """Return a session only when it belongs to the requesting tenant and user."""
+    result = await db.execute(
+        select(ChatSession).where(
+            ChatSession.id == session_id,
+            ChatSession.user_id == user_id,
+            ChatSession.organization_id == organization_id,
+        )
+    )
+    session = result.scalars().first()
+    if session is None:
+        raise HTTPException(status_code=404, detail="Chat session not found")
+    return session
+
+
 @router.post("/", response_model=ChatSessionResponse)
 async def create_chat_session(
     request: ChatSessionCreate,
@@ -51,17 +72,12 @@ async def delete_chat_session(
     current_org: Organization = Depends(get_current_organization),
     db: AsyncSession = Depends(get_db)
 ):
-    result = await db.execute(
-        select(ChatSession)
-        .where(ChatSession.id == session_id)
-        .where(ChatSession.user_id == current_user.id)
-        .where(ChatSession.organization_id == current_org.id)
+    session = await get_owned_chat_session(
+        db,
+        session_id,
+        current_user.id,
+        current_org.id,
     )
-    session = result.scalars().first()
-    
-    if not session:
-        raise HTTPException(status_code=404, detail="Chat session not found")
-        
     await db.delete(session)
     await db.commit()
 
@@ -72,15 +88,12 @@ async def fetch_session_messages(
     current_org: Organization = Depends(get_current_organization),
     db: AsyncSession = Depends(get_db)
 ):
-    session_result = await db.execute(
-        select(ChatSession)
-        .where(ChatSession.id == session_id)
-        .where(ChatSession.user_id == current_user.id)
-        .where(ChatSession.organization_id == current_org.id)
+    await get_owned_chat_session(
+        db,
+        session_id,
+        current_user.id,
+        current_org.id,
     )
-    if not session_result.scalars().first():
-        raise HTTPException(status_code=404, detail="Chat session not found")
-        
     messages_result = await db.execute(
         select(ChatMessage)
         .join(ChatSession, ChatMessage.session_id == ChatSession.id)
