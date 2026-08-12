@@ -93,6 +93,7 @@ async def list_documents(
     result = await db.execute(
         select(Document)
         .where(Document.organization_id == current_org.id)
+        .where(Document.user_id == current_user.id)
         .order_by(Document.created_at.desc())
     )
     docs = result.scalars().all()
@@ -128,6 +129,7 @@ async def delete_document(
         select(Document).where(
             Document.id == doc_id,
             Document.organization_id == current_org.id,
+            Document.user_id == current_user.id,
         )
     )
     doc = result.scalar_one_or_none()
@@ -156,6 +158,7 @@ async def get_document_status(
         select(Document).where(
             Document.id == doc_id,
             Document.organization_id == current_org.id,
+            Document.user_id == current_user.id,
         )
     )
     doc = result.scalar_one_or_none()

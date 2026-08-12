@@ -46,15 +46,22 @@ sys.modules.setdefault(
         VectorParams=_ModelStub,
     ),
 )
+sys.modules.setdefault(
+    "app.worker.tasks",
+    SimpleNamespace(ingest_document=SimpleNamespace(delay=lambda **_kwargs: None)),
+)
 
 from fastapi import HTTPException
 
-from app.api.v1.documents import delete_document, get_document_status
+from app.api.v1.documents import delete_document, get_document_status, list_documents
 
 
 class QueryResultStub:
     def scalar_one_or_none(self):
         return None
+
+    def scalars(self):
+        return SimpleNamespace(all=lambda: [])
 
 
 class DatabaseStub:
@@ -86,6 +93,7 @@ def assert_cross_tenant_document_is_hidden(endpoint):
 
     query = str(db.statements[0])
     assert "documents.organization_id" in query
+    assert "documents.user_id" in query
 
 
 def test_document_status_hides_documents_outside_the_current_tenant():
@@ -94,3 +102,19 @@ def test_document_status_hides_documents_outside_the_current_tenant():
 
 def test_document_delete_hides_documents_outside_the_current_tenant():
     assert_cross_tenant_document_is_hidden(delete_document)
+
+
+def test_document_list_query_is_scoped_to_the_current_user_and_tenant():
+    db = DatabaseStub()
+
+    assert asyncio.run(
+        list_documents(
+            current_user=SimpleNamespace(id=uuid.uuid4()),
+            current_org=SimpleNamespace(id=uuid.uuid4()),
+            db=db,
+        )
+    ) == []
+
+    query = str(db.statements[0])
+    assert "documents.organization_id" in query
+    assert "documents.user_id" in query
