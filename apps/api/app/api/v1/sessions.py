@@ -83,7 +83,10 @@ async def fetch_session_messages(
         
     messages_result = await db.execute(
         select(ChatMessage)
+        .join(ChatSession, ChatMessage.session_id == ChatSession.id)
         .where(ChatMessage.session_id == session_id)
+        .where(ChatSession.user_id == current_user.id)
+        .where(ChatSession.organization_id == current_org.id)
         .order_by(ChatMessage.created_at.asc())
     )
     return messages_result.scalars().all()
