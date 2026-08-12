@@ -75,7 +75,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `feat: integrate langfuse observability and tracing`
 * **[x] Day 27**: Write automated DeepEval tests to evaluate faithfulness and answer relevance.
   * *Commit:* `test: add deepeval test cases for rag pipelines`
-* **[ ] Day 28**: Audit all endpoints to ensure strict tenant validation on `organization_id`.
+* **[x] Day 28**: Audit all endpoints to ensure strict tenant validation on `organization_id`.
   * *Commit:* `security: audit multi-tenant request isolation`
 * **[ ] Day 29**: Create production-grade Dockerfiles for frontend, backend, and workers.
   * *Commit:* `chore: write multi-stage production dockerfiles`
