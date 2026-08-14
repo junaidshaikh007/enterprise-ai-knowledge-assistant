@@ -77,7 +77,7 @@ This roadmap breaks down the remaining work (Phases 6 to 10) into **30 daily mic
   * *Commit:* `test: add deepeval test cases for rag pipelines`
 * **[x] Day 28**: Audit all endpoints to ensure strict tenant validation on `organization_id`.
   * *Commit:* `security: audit multi-tenant request isolation`
-* **[ ] Day 29**: Create production-grade Dockerfiles for frontend, backend, and workers.
+* **[x] Day 29**: Create production-grade Dockerfiles for frontend, backend, and workers.
   * *Commit:* `chore: write multi-stage production dockerfiles`
 * **[ ] Day 30**: Complete local end-to-end builds, documentation cleanup, and manual verification.
   * *Commit:* `chore: finalize setup, polish README, and verify build`
