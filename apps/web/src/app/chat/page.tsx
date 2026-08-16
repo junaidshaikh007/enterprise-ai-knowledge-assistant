@@ -5,26 +5,20 @@ import { ChatSidebar, ChatSession } from "@/components/ChatSidebar";
 import { ChatMessage, Message } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { useChatStream } from "@/hooks/useChatStream";
-const SEED_SESSIONS: ChatSession[] = [
-  {
-    id: "1",
-    title: "Revenue Q3 Analysis",
-    lastMessage: "The Q3 report indicates a 12% increase…",
-    timestamp: "2 min ago",
-  },
-  {
-    id: "2",
-    title: "HR Policy Questions",
-    lastMessage: "According to section 4.2 of the handbook…",
-    timestamp: "1 hr ago",
-  },
-  {
-    id: "3",
-    title: "Product Roadmap 2026",
-    lastMessage: "The roadmap prioritises AI-driven features…",
-    timestamp: "Yesterday",
-  },
-];
+
+type ChatSessionApi = {
+  id: string;
+  title: string | null;
+  created_at: string;
+  updated_at: string | null;
+};
+
+type ChatMessageApi = {
+  id: string;
+  role: string;
+  content: string;
+  created_at: string;
+};
 
 const WELCOME_SUGGESTIONS = [
   "Summarise the latest quarterly report",
@@ -57,9 +51,9 @@ export default function ChatPage() {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
-          const data = await res.json();
+          const data = await res.json() as ChatSessionApi[];
           setSessions(
-            data.map((s: any) => ({
+            data.map((s) => ({
               id: s.id,
               title: s.title || "New Chat",
               lastMessage: "...",
@@ -83,11 +77,11 @@ export default function ChatPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        const data = await res.json();
+        const data = await res.json() as ChatMessageApi[];
         setMessages(
-          data.map((m: any) => ({
+          data.map((m) => ({
             id: m.id,
-            role: m.role,
+            role: m.role === "user" ? "user" : "assistant",
             content: m.content,
             timestamp: new Date(m.created_at),
           }))
