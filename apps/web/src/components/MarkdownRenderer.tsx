@@ -3,7 +3,6 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
 interface MarkdownRendererProps {
   content: string;
@@ -11,18 +10,18 @@ interface MarkdownRendererProps {
 
 export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) => {
   return (
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      className="prose prose-sm max-w-none prose-invert break-words"
-      components={{
-        h1: ({ node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
-        h2: ({ node, ...props }) => <h2 className="text-lg font-bold mt-4 mb-2" {...props} />,
-        h3: ({ node, ...props }) => <h3 className="text-base font-bold mt-3 mb-2" {...props} />,
-        p: ({ node, ...props }) => <p className="mb-2 leading-relaxed" {...props} />,
-        ul: ({ node, ...props }) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
-        ol: ({ node, ...props }) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
-        li: ({ node, ...props }) => <li className="mb-1" {...props} />,
-        a: ({ node, ...props }) => <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
+    <div className="prose prose-sm max-w-none prose-invert break-words">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+        h1: ({ node: _node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
+        h2: ({ node: _node, ...props }) => <h2 className="text-lg font-bold mt-4 mb-2" {...props} />,
+        h3: ({ node: _node, ...props }) => <h3 className="text-base font-bold mt-3 mb-2" {...props} />,
+        p: ({ node: _node, ...props }) => <p className="mb-2 leading-relaxed" {...props} />,
+        ul: ({ node: _node, ...props }) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
+        ol: ({ node: _node, ...props }) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
+        li: ({ node: _node, ...props }) => <li className="mb-1" {...props} />,
+        a: ({ node: _node, ...props }) => <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
         code({ node, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || '');
           // check if it's an inline code block by looking at className (usually inline code has no language-xxx class)
@@ -41,20 +40,19 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
                 <span>{match[1]}</span>
               </div>
               <SyntaxHighlighter
-                style={vscDarkPlus as any}
                 language={match[1]}
                 PreTag="div"
                 customStyle={{ margin: 0, borderRadius: 0 }}
-                {...props}
               >
                 {String(children).replace(/\n$/, '')}
               </SyntaxHighlighter>
             </div>
           );
         },
-      }}
-    >
-      {content}
-    </ReactMarkdown>
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
   );
 };
