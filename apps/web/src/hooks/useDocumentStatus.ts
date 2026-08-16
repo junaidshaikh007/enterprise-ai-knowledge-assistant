@@ -52,8 +52,8 @@ export function useDocumentStatus(
       }
 
       return data;
-    } catch (err: any) {
-      const msg = err.message || "An error occurred while fetching status";
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "An error occurred while fetching status";
       setError(msg);
       setIsPolling(false);
       if (onError) onError(msg);
@@ -64,13 +64,17 @@ export function useDocumentStatus(
 
   useEffect(() => {
     if (!documentId) {
-      setStatusInfo(null);
-      setIsPolling(false);
+      queueMicrotask(() => {
+        setStatusInfo(null);
+        setIsPolling(false);
+      });
       return;
     }
 
-    setIsPolling(true);
-    fetchStatus();
+    queueMicrotask(() => {
+      setIsPolling(true);
+      void fetchStatus();
+    });
 
     timerRef.current = setInterval(() => {
       fetchStatus();

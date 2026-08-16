@@ -45,7 +45,11 @@ export function DocumentList({ refreshTrigger = 0, onRefreshFinished }: Document
 
   // Initial fetch and manual trigger fetch
   useEffect(() => {
-    fetchDocuments();
+    const initialFetch = setTimeout(() => {
+      void fetchDocuments();
+    }, 0);
+
+    return () => clearTimeout(initialFetch);
   }, [fetchDocuments, refreshTrigger]);
 
   // Polling setup if any document is in PENDING or PROCESSING state

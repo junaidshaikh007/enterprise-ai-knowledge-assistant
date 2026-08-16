@@ -14,15 +14,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content }) =
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-        h1: ({ node: _node, ...props }) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
-        h2: ({ node: _node, ...props }) => <h2 className="text-lg font-bold mt-4 mb-2" {...props} />,
-        h3: ({ node: _node, ...props }) => <h3 className="text-base font-bold mt-3 mb-2" {...props} />,
-        p: ({ node: _node, ...props }) => <p className="mb-2 leading-relaxed" {...props} />,
-        ul: ({ node: _node, ...props }) => <ul className="list-disc list-outside ml-4 mb-2" {...props} />,
-        ol: ({ node: _node, ...props }) => <ol className="list-decimal list-outside ml-4 mb-2" {...props} />,
-        li: ({ node: _node, ...props }) => <li className="mb-1" {...props} />,
-        a: ({ node: _node, ...props }) => <a className="text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
         code({ node, className, children, ...props }) {
+          void node;
           const match = /language-(\w+)/.exec(className || '');
           // check if it's an inline code block by looking at className (usually inline code has no language-xxx class)
           // Also, react-markdown v9 might handle inline differently, but typically if there's no match it's inline.
