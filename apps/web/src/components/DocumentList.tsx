@@ -33,8 +33,8 @@ export function DocumentList({ refreshTrigger = 0, onRefreshFinished }: Document
       const data: DocumentListItem[] = await res.json();
       setDocuments(data);
       setError(null);
-    } catch (err: any) {
-      setError(err.message || "An error occurred while loading documents.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred while loading documents.");
     } finally {
       setLoading(false);
       if (onRefreshFinished) {
@@ -95,8 +95,8 @@ export function DocumentList({ refreshTrigger = 0, onRefreshFinished }: Document
       }
 
       setDocuments((prev) => prev.filter((doc) => doc.document_id !== docId));
-    } catch (err: any) {
-      alert(err.message || "Failed to delete document.");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to delete document.");
     } finally {
       setDeletingId(null);
     }

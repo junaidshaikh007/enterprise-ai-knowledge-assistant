@@ -84,9 +84,9 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps = {}) {
       setMessage("Upload successful. Analyzing and indexing document...");
       setActiveDocId(data.document_id);
       if (onUploadComplete) onUploadComplete(); // Refresh list to show pending
-    } catch (err: any) {
+    } catch (err) {
       setStatus("error");
-      setMessage(err.message || "An error occurred during upload.");
+      setMessage(err instanceof Error ? err.message : "An error occurred during upload.");
     }
   };
 

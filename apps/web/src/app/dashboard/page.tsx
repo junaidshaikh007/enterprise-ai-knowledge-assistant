@@ -20,7 +20,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-1">
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Knowledge Base</h2>
           <p className="text-sm text-gray-500 mb-6">
-            Upload documents (PDF, TXT, DOCX) to expand the AI's knowledge base. 
+            Upload documents (PDF, TXT, DOCX) to expand the AI&apos;s knowledge base.
             These documents will be parsed and embedded for RAG retrieval in real-time.
           </p>
           <DocumentUpload onUploadComplete={handleUploadComplete} />
