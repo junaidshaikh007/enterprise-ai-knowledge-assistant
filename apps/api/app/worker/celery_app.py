@@ -17,9 +17,8 @@ def create_celery_app() -> Celery:
         "knowledge_assistant",
         broker=settings.CELERY_BROKER_URL,
         backend=settings.CELERY_RESULT_BACKEND,
-        # Auto-discover tasks inside app/worker/tasks/
-        include=["app.worker.tasks"],
     )
+
 
     app.conf.update(
         # ── Serialisation ──────────────────────────────────────────────────

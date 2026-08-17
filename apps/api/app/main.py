@@ -1,12 +1,22 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from app.core.database import init_db
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize DB tables on startup
+    await init_db()
+    yield
 
 app = FastAPI(
     title="Enterprise AI Knowledge Assistant API",
     description="API for the Enterprise AI Knowledge Assistant",
     version="1.0.0",
+    lifespan=lifespan,
 )
+
 
 # CORS Configuration
 # In production, this should be restricted to the specific origins of the frontend.

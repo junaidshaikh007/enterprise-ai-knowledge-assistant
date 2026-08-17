@@ -2,6 +2,8 @@
 import React, { useState, useRef } from "react";
 import { useDocumentStatus } from "@/hooks/useDocumentStatus";
 
+import { getOrFetchAuthToken } from "@/lib/auth";
+
 interface DocumentUploadProps {
   onUploadComplete?: () => void;
 }
@@ -65,7 +67,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps = {}) {
     formData.append("file", file);
 
     try {
-      const token = localStorage.getItem("token"); // Assuming token is stored here
+      const token = await getOrFetchAuthToken();
       const res = await fetch("http://localhost:8000/api/v1/documents/upload", {
         method: "POST",
         headers: {

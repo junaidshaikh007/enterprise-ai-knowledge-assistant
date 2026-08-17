@@ -1,28 +1,38 @@
-from pydantic_settings import BaseSettings
+import os
+from pathlib import Path
 from typing import Optional
+from dotenv import load_dotenv
+from pydantic import BaseModel
 
-class Settings(BaseSettings):
-    PROJECT_NAME: str = "Enterprise AI Knowledge Assistant"
-    API_V1_STR: str = "/api/v1"
+# Load .env file from root or current directory
+env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
+else:
+    load_dotenv()
+
+class Settings(BaseModel):
+    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "Enterprise AI Knowledge Assistant")
+    API_V1_STR: str = os.getenv("API_V1_STR", "/api/v1")
     
     # Security
-    SECRET_KEY: str = "supersecretkey" # TODO: Change in production
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8 # 8 days
+    SECRET_KEY: str = os.getenv("SECRET_KEY", "supersecretkey")
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "11520"))
     
     # PostgreSQL
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_USER: str = "postgres"
-    POSTGRES_PASSWORD: str = "postgres"
-    POSTGRES_DB: str = "knowledge_assistant"
-    POSTGRES_PORT: str = "5432"
+    POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
+    POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
+    POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "postgres")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "knowledge_assistant")
+    POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
 
     # Qdrant (Vector Database)
-    QDRANT_HOST: str = "localhost"
-    QDRANT_PORT: int = 6333
-    QDRANT_API_KEY: Optional[str] = None
+    QDRANT_HOST: str = os.getenv("QDRANT_HOST", "localhost")
+    QDRANT_PORT: int = int(os.getenv("QDRANT_PORT", "6333"))
+    QDRANT_API_KEY: Optional[str] = os.getenv("QDRANT_API_KEY", None)
     
     # Redis & Celery
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     @property
     def CELERY_BROKER_URL(self) -> str:
@@ -33,25 +43,21 @@ class Settings(BaseSettings):
         return self.REDIS_URL
 
     # LLM & Embeddings
-    OPENAI_API_KEY: Optional[str] = None
-    EMBEDDING_MODEL: str = "text-embedding-3-small"
+    OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY", None)
+    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
 
     # Observability (Langfuse)
-    LANGFUSE_PUBLIC_KEY: Optional[str] = None
-    LANGFUSE_SECRET_KEY: Optional[str] = None
-    LANGFUSE_HOST: str = "https://cloud.langfuse.com"
+    LANGFUSE_PUBLIC_KEY: Optional[str] = os.getenv("LANGFUSE_PUBLIC_KEY", None)
+    LANGFUSE_SECRET_KEY: Optional[str] = os.getenv("LANGFUSE_SECRET_KEY", None)
+    LANGFUSE_HOST: str = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
 
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
 
-    class Config:
-        env_file = ".env"
-
 settings = Settings()
 
-import os
-# Ensure Langfuse SDK can read the config from environment variables
+# Ensure Langfuse SDK environment variables if provided
 if settings.LANGFUSE_PUBLIC_KEY:
     os.environ["LANGFUSE_PUBLIC_KEY"] = settings.LANGFUSE_PUBLIC_KEY
 if settings.LANGFUSE_SECRET_KEY:

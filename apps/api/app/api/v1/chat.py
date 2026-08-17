@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from langfuse import observe, get_client
+from app.core.observability import observe, get_client
 
 from app.core.database import get_db
 from app.core.deps import get_current_active_user, get_current_organization
@@ -56,7 +56,7 @@ async def chat(
         # Step 1: Retrieve relevant context chunks matching organization_id
         context = retrieval_service.retrieve_context(
             query=request.message,
-            organization_id=current_org.id,
+            organization_id=str(current_org.id),
             top_k=5
         )
         

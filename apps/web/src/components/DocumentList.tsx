@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { DocumentListItem } from "@/types/document";
 import { DocumentStatusBadge } from "./DocumentStatusBadge";
+import { getOrFetchAuthToken } from "@/lib/auth";
 
 interface DocumentListProps {
   refreshTrigger?: number;
@@ -19,7 +20,7 @@ export function DocumentList({ refreshTrigger = 0, onRefreshFinished }: Document
 
   const fetchDocuments = useCallback(async () => {
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token = await getOrFetchAuthToken();
       const res = await fetch("http://localhost:8000/api/v1/documents/", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -86,7 +87,7 @@ export function DocumentList({ refreshTrigger = 0, onRefreshFinished }: Document
 
     setDeletingId(docId);
     try {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+      const token = await getOrFetchAuthToken();
       const res = await fetch(`http://localhost:8000/api/v1/documents/${docId}`, {
         method: "DELETE",
         headers: {

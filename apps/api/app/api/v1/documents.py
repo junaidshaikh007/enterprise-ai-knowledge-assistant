@@ -1,4 +1,5 @@
 import base64
+import logging
 import uuid
 from typing import List
 
@@ -11,9 +12,10 @@ from app.core.deps import get_current_active_user, get_current_organization
 from app.models.user import User
 from app.models.organization import Organization
 from app.models.document import Document, ProcessingStatus
-from app.worker.tasks import ingest_document
+from app.worker.tasks import ingest_document, ingest_document_inline
 from app.schemas.document import DocumentUploadResponse, DocumentListItem, DocumentStatusResponse
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 @router.post("/upload", status_code=status.HTTP_202_ACCEPTED, response_model=DocumentUploadResponse)
@@ -56,28 +58,32 @@ async def upload_document(
     await db.commit()
     await db.refresh(doc)
 
-    # ── 4. Dispatch Celery task (non-blocking) ──────────────────────────────
+    # ── 4. Real-time document ingestion ──────────────────────────────────────
     file_content_b64 = base64.b64encode(content).decode("utf-8")
-    task = ingest_document.delay(
-        file_content_b64=file_content_b64,
-        file_ext=file_ext,
-        file_name=file.filename,
-        organization_id=str(current_org.id),
-        document_id=str(doc.id),
-    )
-
-    # ── 5. Store the Celery task ID for status lookups ──────────────────────
-    doc.task_id = task.id
-    await db.commit()
+    task_id = f"realtime-{uuid.uuid4().hex[:8]}"
+    try:
+        ingest_document_inline(
+            file_content_b64=file_content_b64,
+            file_ext=file_ext,
+            file_name=file.filename,
+            organization_id=current_org.id,
+            document_id=str(doc.id),
+        )
+    except Exception as e:
+        logger.error(f"Inline ingestion failed: {e}")
+        doc.status = ProcessingStatus.FAILED
+        doc.error_message = str(e)
+        await db.commit()
 
     return {
         "document_id": str(doc.id),
-        "task_id": task.id,
+        "task_id": task_id,
         "filename": file.filename,
         "file_size": len(content),
         "status": ProcessingStatus.PENDING,
         "message": "Document accepted. Ingestion running in background.",
     }
+
 
 
 @router.get("/", response_model=List[DocumentListItem])

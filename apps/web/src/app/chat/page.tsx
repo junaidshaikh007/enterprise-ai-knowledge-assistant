@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { ChatSidebar, ChatSession } from "@/components/ChatSidebar";
 import { ChatMessage, Message } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { useChatStream } from "@/hooks/useChatStream";
+import { getOrFetchAuthToken } from "@/lib/auth";
 
 type ChatSessionApi = {
   id: string;
@@ -46,7 +48,8 @@ export default function ChatPage() {
   useEffect(() => {
     const fetchSessions = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token = await getOrFetchAuthToken();
+        if (!token) return;
         const res = await fetch("http://localhost:8000/api/v1/sessions/", {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -72,7 +75,8 @@ export default function ChatPage() {
     setActiveSessionId(id);
     setMessages([]);
     try {
-      const token = localStorage.getItem("token");
+      const token = await getOrFetchAuthToken();
+      if (!token) return;
       const res = await fetch(`http://localhost:8000/api/v1/sessions/${id}/messages`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -96,10 +100,11 @@ export default function ChatPage() {
     const query = text ?? input.trim();
     if (!query || isLoading) return;
 
+    const token = await getOrFetchAuthToken();
+
     let targetSessionId = activeSessionId;
     if (!targetSessionId) {
       try {
-        const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:8000/api/v1/sessions/", {
           method: "POST",
           headers: {
@@ -147,7 +152,6 @@ export default function ChatPage() {
     setInput("");
 
     try {
-      const token = localStorage.getItem("token");
       await streamChat({
         message: query,
         session_id: targetSessionId || undefined,
@@ -189,8 +193,6 @@ export default function ChatPage() {
     }
   };
 
-
-
   /* ─── Render ─── */
   return (
     <div className="flex h-screen bg-[#0f0f13] text-white overflow-hidden">
@@ -206,25 +208,34 @@ export default function ChatPage() {
       {/* ─── Main Chat Area ─── */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="h-14 border-b border-white/5 flex items-center px-4 gap-3 flex-shrink-0 bg-[#0f0f13]/80 backdrop-blur-sm">
-          <button
-            id="toggle-sidebar-btn"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg hover:bg-white/5 transition-colors text-zinc-400 hover:text-white cursor-pointer"
-          >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </button>
-          <div className="flex-1 text-center">
+        <header className="h-14 border-b border-white/5 flex items-center px-4 gap-3 flex-shrink-0 bg-[#0f0f13]/80 backdrop-blur-sm justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              id="toggle-sidebar-btn"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-1.5 rounded-lg hover:bg-white/5 transition-colors text-zinc-400 hover:text-white cursor-pointer"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+            </button>
             <h1 className="text-sm font-semibold text-zinc-200">
               {activeSessionId
                 ? sessions.find((s) => s.id === activeSessionId)?.title
                 : "Knowledge Assistant"}
             </h1>
           </div>
-          {/* Placeholder for future controls */}
-          <div className="w-8" />
+          <div className="flex items-center gap-3 text-xs">
+            <Link
+              href="/dashboard"
+              className="px-3 py-1.5 rounded-md bg-violet-600/30 hover:bg-violet-600/50 text-violet-200 border border-violet-500/30 transition-all font-medium flex items-center gap-1.5"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+              Upload Documents
+            </Link>
+          </div>
         </header>
 
         {/* Messages Area */}

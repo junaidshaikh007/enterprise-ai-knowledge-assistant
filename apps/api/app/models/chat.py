@@ -1,17 +1,17 @@
 import uuid
 from sqlalchemy import Column, String, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
 from app.core.database import Base
+from app.models.guid import GUID
 
 class ChatSession(Base):
     __tablename__ = "chat_sessions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4, index=True)
     title = Column(String, default="New Chat")
     
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id"), nullable=False)
+    user_id = Column(GUID, ForeignKey("users.id"), nullable=False)
+    organization_id = Column(GUID, ForeignKey("organizations.id"), nullable=False)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -24,11 +24,12 @@ class ChatSession(Base):
 class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True)
-    session_id = Column(UUID(as_uuid=True), ForeignKey("chat_sessions.id"), nullable=False)
+    id = Column(GUID, primary_key=True, default=uuid.uuid4, index=True)
+    session_id = Column(GUID, ForeignKey("chat_sessions.id"), nullable=False)
     role = Column(String, nullable=False) # 'user' or 'assistant'
     content = Column(String, nullable=False)
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     session = relationship("ChatSession", back_populates="messages")
+
