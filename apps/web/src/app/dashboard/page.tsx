@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { DocumentUpload } from "@/components/DocumentUpload";
 import { DocumentList } from "@/components/DocumentList";
 
@@ -14,7 +15,21 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col flex-1 p-8 bg-zinc-50 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Dashboard</h1>
+      <header className="flex items-center justify-between mb-8 pb-4 border-b border-zinc-200">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+          <p className="text-sm text-zinc-500 mt-1">Manage documents and knowledge base</p>
+        </div>
+        <Link
+          href="/chat"
+          className="px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium shadow-md shadow-violet-600/20 transition-all flex items-center gap-2 text-sm"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          Open Chat Interface →
+        </Link>
+      </header>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">

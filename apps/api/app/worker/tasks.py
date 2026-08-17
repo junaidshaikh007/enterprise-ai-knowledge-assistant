@@ -27,21 +27,34 @@ def _update_document_status(document_id: str, status: str, *, error_message: str
         import app.models.base  # Ensure all SQLAlchemy models are registered
         from app.models.document import Document
 
-        if "postgresql+asyncpg://" in settings.DATABASE_URL:
-            sync_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
-        elif "sqlite+aiosqlite://" in settings.DATABASE_URL:
-            sync_url = settings.DATABASE_URL.replace("sqlite+aiosqlite://", "sqlite://")
-        else:
-            sync_url = "sqlite:///./knowledge_assistant.db"
+        sync_url = "sqlite:///./knowledge_assistant.db"
+        try:
+            if "postgresql+asyncpg://" in settings.DATABASE_URL:
+                pg_url = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://")
+                engine = create_engine(pg_url, pool_pre_ping=True)
+                SessionLocal = sessionmaker(bind=engine)
+                target_id = uuid.UUID(document_id) if isinstance(document_id, str) else document_id
+                with SessionLocal() as session:
+                    doc = session.get(Document, target_id)
+                    if doc is not None:
+                        doc.status = status
+                        if error_message is not None:
+                            doc.error_message = error_message
+                        if num_chunks is not None:
+                            doc.num_chunks = num_chunks
+                        session.commit()
+                        logger.debug("Document %s status -> %s", document_id, status)
+                        return
+        except Exception as pg_err:
+            logger.info(f"PostgreSQL update skipped ({pg_err}). Falling back to local SQLite.")
+
         engine = create_engine(sync_url, pool_pre_ping=True)
         SessionLocal = sessionmaker(bind=engine)
-
         target_id = uuid.UUID(document_id) if isinstance(document_id, str) else document_id
-
         with SessionLocal() as session:
             doc = session.get(Document, target_id)
             if doc is None:
-                logger.warning("_update_document_status: Document %s not found", document_id)
+                logger.warning("_update_document_status: Document %s not found in SQLite", document_id)
                 return
             doc.status = status
             if error_message is not None:
@@ -49,7 +62,7 @@ def _update_document_status(document_id: str, status: str, *, error_message: str
             if num_chunks is not None:
                 doc.num_chunks = num_chunks
             session.commit()
-            logger.debug("Document %s status -> %s", document_id, status)
+            logger.info("Document %s status -> %s (chunks: %s) in local SQLite", document_id, status, num_chunks)
     except Exception:
         logger.exception("Failed to update status for document %s", document_id)
 
